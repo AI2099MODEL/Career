@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Career Engine Global</title>
+
+<style>
+body {background:#0f172a;color:white;font-family:Arial;padding:20px}
+input,button {width:100%;padding:10px;margin:5px;border-radius:8px;border:none}
+button {background:#22c55e}
+.card {background:#1e293b;padding:10px;margin-top:10px;border-radius:10px}
+.suggestion {padding:8px;background:#334155;margin:2px;cursor:pointer}
+</style>
+</head>
+
+<body>
+
+<h2>🌍 Career Engine</h2>
+
+<input id="dob" placeholder="DOB YYYY-MM-DD">
+<input id="tob" placeholder="Time HH:MM">
+
+<input id="place" placeholder="Search city..." oninput="searchCity()">
+<div id="suggestions"></div>
+
+<button onclick="run()">Generate Report</button>
+
+<div id="out"></div>
+
+<script>
+
+let cities = [];
+let selectedLat = null;
+let selectedLon = null;
+
+// load global cities
+fetch("cities.json")
+.then(res => res.json())
+.then(data => cities = data);
+
+function searchCity(){
+
+let q = document.getElementById("place").value.toLowerCase();
+
+if(q.length < 2) return;
+
+let matches = cities.filter(c =>
+  c.name.toLowerCase().includes(q)
+);
+
+let html = "";
+
+matches.slice(0,5).forEach(c=>{
+  html += `<div class="suggestion"
+    onclick="selectCity(${c.lat},${c.lon},'${c.name}, ${c.country}')">
+    ${c.name}, ${c.country}
+  </div>`;
+});
+
+document.getElementById("suggestions").innerHTML = html;
+}
+
+function selectCity(lat, lon, name){
+  selectedLat = lat;
+  selectedLon = lon;
+  document.getElementById("place").value = name;
+  document.getElementById("suggestions").innerHTML = "";
+}
+
+function run(){
+
+let dob = document.getElementById("dob").value;
+let tob = document.getElementById("tob").value;
+
+if(!selectedLat){
+  alert("Please select a valid city");
+  return;
+}
+
+fetch(`https://career-api-0nmq.onrender.com/?dob=${dob}&tob=${tob}&lat=${selectedLat}&lon=${selectedLon}`)
+.then(r=>r.json())
+.then(d=>{
+
+let html="";
+
+for(let y in d.future){
+
+let f=d.future[y];
+
+html+=`<div class="card">
+<b>${y}</b> → ${f.type}<br>
+Stage: ${f.stage}<br>
+Months: ${f.months.join(", ")}<br>
+Dates: ${f.dates.join(", ")}
+</div>`;
+}
+
+document.getElementById("out").innerHTML=html;
+
+});
+}
+
+</script>
+
+</body>
+</html>
