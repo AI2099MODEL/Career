@@ -4,7 +4,7 @@
 
 import sys, subprocess, os
 
-# ---------- AUTO INSTALL ----------
+# ---------- AUTO INSTALL ---------
 def install(pkg):
     subprocess.check_call([sys.executable, "-m", "pip", "install", pkg])
 
